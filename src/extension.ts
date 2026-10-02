@@ -14,6 +14,7 @@ interface GoMain {
   name: string;
   filePath: string;
   dir: string;
+  moduleRoot: string;
   range: vscode.Range;
 }
 
@@ -133,8 +134,26 @@ function getGoMains(document: vscode.TextDocument): GoMain[] {
     name: path.basename(filePath),
     filePath,
     dir,
+    moduleRoot: findModuleRoot(dir),
     range: new vscode.Range(mainLine.range.start, mainLine.range.end)
   }];
+}
+
+// Walks up from `startDir` and returns the directory containing the first
+// `go.mod` file. Falls back to `startDir` when no module root is found, so the
+// extension works even for files outside a Go module.
+function findModuleRoot(startDir: string): string {
+  let current = path.resolve(startDir);
+  for (;;) {
+    if (fs.existsSync(path.join(current, 'go.mod'))) {
+      return current;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      return path.resolve(startDir);
+    }
+    current = parent;
+  }
 }
 
 function findFuncMainLine(document: vscode.TextDocument): number {
@@ -161,7 +180,9 @@ function getActiveGoMain(): GoMain | undefined {
 // ---------------------------------------------------------------------------
 
 function runMain(main: GoMain): void {
-  const cwd = main.dir;
+  // Run from the module root so relative config files, data dirs and `os.Getwd()`
+  // based paths resolve the same way they do when launching from the project root.
+  const cwd = main.moduleRoot;
   const mode = vscode.workspace.getConfiguration('go-target-launcher').get<string>('runMainMode', 'run');
   const file = shellQuote(main.filePath);
   const terminal = getTerminal(`Run ${main.name}`, cwd);
@@ -187,7 +208,7 @@ function debugMain(main: GoMain): void {
     request: 'launch',
     mode: 'debug',
     program: main.filePath,
-    cwd: main.dir
+    cwd: main.moduleRoot
   }).then(
     () => undefined,
     async (error: unknown) => {
@@ -245,11 +266,8 @@ async function profileMain(main: GoMain): Promise<void> {
   const overlayPath = path.join(os.tmpdir(), `go-target-launcher-${process.pid}-overlay.json`);
   const profilePath = path.join(profileDir, 'cpu.pprof');
 
-  await fs.promises.writeFile(
-    wrapperPath,
-    PROFILE_WRAPPER.replace('${DURATION_SECONDS}', String(duration)),
-    'utf8'
-  );
+  const wrapperSource = PROFILE_WRAPPER.replace('${DURATION_SECONDS}', String(duration));
+  await fs.promises.writeFile(wrapperPath, wrapperSource, 'utf8');
   await fs.promises.writeFile(
     overlayPath,
     JSON.stringify({ Replace: { [virtualWrapperPath]: wrapperPath } }),
@@ -258,19 +276,27 @@ async function profileMain(main: GoMain): Promise<void> {
 
   const terminal = vscode.window.createTerminal({
     name: `Profile ${main.name}`,
-    cwd: main.dir
+    cwd: main.moduleRoot
   });
   terminal.show(true);
 
-  const testCommand = [
-    `go test -overlay="${overlayPath}"`,
-    `-run "^TestGoTargetLauncherProfile$"`,
-    `-count=1`,
-    `-timeout=${duration + 30}s`,
-    `-cpuprofile="${profilePath}"`,
-    main.dir
-  ].join(' ');
-  terminal.sendText(testCommand, true);
+  // Package path relative to the module root.
+  const pkgRel = path.relative(main.moduleRoot, main.dir);
+  const packageArg = pkgRel ? `./${pkgRel.split(path.sep).join('/')}` : '.';
+  const binPath = path.join(os.tmpdir(), `go-target-launcher-${process.pid}-profile.bin`);
+
+  // Two steps:
+  //  1. Compile a test binary (`go test -c`) using the injected wrapper.
+  //  2. Run that binary from the module root. Running from the module root makes
+  //     `os.Getwd()` and relative paths behave exactly like a normal run, which
+  //     matters for apps that look up config/data relative to the module root.
+  const commands = [
+    `go test -c -o "${binPath}" -overlay="${overlayPath}" ${packageArg}`,
+    `"${binPath}" -test.run "^TestGoTargetLauncherProfile$" -test.count=1 -test.timeout=${duration + 30}s -test.cpuprofile="${profilePath}"`
+  ];
+  for (const command of commands) {
+    terminal.sendText(command, true);
+  }
 
   // Give the test time to produce the profile, then open the pprof web UI and
   // clean up the temporary wrapper and overlay files.
@@ -278,14 +304,15 @@ async function profileMain(main: GoMain): Promise<void> {
 
   const pprofTerminal = vscode.window.createTerminal({
     name: `pprof ${main.name}`,
-    cwd: main.dir
+    cwd: main.moduleRoot
   });
   pprofTerminal.show(true);
   pprofTerminal.sendText(`go tool pprof -http=localhost:0 "${profilePath}"`, true);
 
   await Promise.allSettled([
     fs.promises.unlink(wrapperPath),
-    fs.promises.unlink(overlayPath)
+    fs.promises.unlink(overlayPath),
+    fs.promises.unlink(binPath)
   ]);
 }
 

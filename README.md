@@ -56,7 +56,11 @@ Other settings:
 
 A file is treated as a Go main file when it starts with `package main` and declares `func main()`.
 
-> **Profile mode** runs `go test -cpuprofile` with a temporary test wrapper injected through `go test -overlay`, so your project files are never modified. It captures the profile for `go-target-launcher.profileDuration` seconds and then opens the interactive `go tool pprof -http` web UI.
+## How the working directory is resolved
+
+Run, Debug and Profile all execute from the **module root** — the nearest directory containing a `go.mod`, searched upward from the main file. This makes relative config files, data directories and `os.Getwd()` based paths behave exactly like running the program from the project root, no matter where the `main.go` file lives.
+
+> **Profile mode** compiles a test binary (`go test -c`) with a temporary test wrapper injected through `go test -overlay` (your project files are never modified), then runs that binary from the module root. It captures a CPU profile for `go-target-launcher.profileDuration` seconds and opens the interactive `go tool pprof -http` web UI.
 
 ## Development
 
