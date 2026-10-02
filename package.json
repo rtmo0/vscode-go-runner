@@ -1,0 +1,181 @@
+{
+  "name": "go-target-launcher",
+  "displayName": "Go Target Launcher",
+  "description": "Run, debug and profile Go main files and workspace commands from a configurable list via the Command Palette, CodeLens and status bar.",
+  "version": "0.1.0",
+  "publisher": "samarin-aa-aka-rtm00",
+  "license": "MIT",
+  "preview": true,
+  "pricing": "Free",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0077b6",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rtmo0/vscode-go-runner.git"
+  },
+  "homepage": "https://github.com/rtmo0/vscode-go-runner#readme",
+  "bugs": {
+    "url": "https://github.com/rtmo0/vscode-go-runner/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "go",
+    "golang",
+    "runner",
+    "debug",
+    "profile",
+    "pprof",
+    "commands",
+    "terminal",
+    "codelens",
+    "run"
+  ],
+  "main": "./dist/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Go Target Launcher executes shell commands and launches debug sessions and therefore requires a trusted workspace."
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "activationEvents": [
+    "onLanguage:go",
+    "onCommand:go-target-launcher.runCommand",
+    "onCommand:go-target-launcher.configure"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "go-target-launcher.runCommand",
+        "title": "Run Command…",
+        "category": "Go Target Launcher",
+        "icon": "$(play)"
+      },
+      {
+        "command": "go-target-launcher.runMain",
+        "title": "Run Main",
+        "category": "Go Target Launcher",
+        "icon": "$(play)"
+      },
+      {
+        "command": "go-target-launcher.debugMain",
+        "title": "Debug Main",
+        "category": "Go Target Launcher",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "go-target-launcher.profileMain",
+        "title": "Profile Main (CPU)",
+        "category": "Go Target Launcher",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "go-target-launcher.configure",
+        "title": "Configure Commands",
+        "category": "Go Target Launcher",
+        "icon": "$(gear)"
+      }
+    ],
+    "configuration": {
+      "title": "Go Target Launcher",
+      "properties": {
+        "go-target-launcher.commands": {
+          "type": "array",
+          "default": [],
+          "scope": "resource",
+          "description": "Commands shown by Go Target Launcher. Commands execute in an integrated terminal.",
+          "items": {
+            "type": "object",
+            "required": [
+              "label",
+              "command"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Name shown in Go Target Launcher."
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Shell command to execute. Supports ${workspaceFolder}."
+              },
+              "cwd": {
+                "type": "string",
+                "description": "Working directory. Supports ${workspaceFolder}; defaults to the workspace folder."
+              },
+              "description": {
+                "type": "string",
+                "description": "Optional description shown in Go Target Launcher."
+              }
+            }
+          }
+        },
+        "go-target-launcher.reuseTerminal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Reuse the Go Target Launcher terminal between command executions."
+        },
+        "go-target-launcher.runMainMode": {
+          "type": "string",
+          "enum": [
+            "run",
+            "build"
+          ],
+          "enumDescriptions": [
+            "Use `go run <file>` — no leftover binary.",
+            "Use `go build -o <tmp> <file>` then execute the produced binary."
+          ],
+          "default": "run",
+          "description": "How Go Target Launcher executes a Go main file in Run mode."
+        },
+        "go-target-launcher.profileDuration": {
+          "type": "integer",
+          "default": 30,
+          "minimum": 1,
+          "description": "CPU profile duration in seconds for the Profile mode."
+        },
+        "go-target-launcher.profileOutputDir": {
+          "type": "string",
+          "default": "${workspaceFolder}/.go-profile",
+          "description": "Directory where the CPU profile (cpu.pprof) and temporary binary are written. Supports ${workspaceFolder}."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run check && npm run build",
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "compile": "tsc -p ./ --noEmit",
+    "typecheck": "tsc -p ./ --noEmit",
+    "check": "npm run typecheck",
+    "package": "vsce package --no-dependencies",
+    "package:list": "vsce ls --no-dependencies",
+    "lint": "tsc -p ./ --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.6.0"
+  }
+}
