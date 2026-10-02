@@ -2,7 +2,7 @@
   "name": "go-target-launcher",
   "displayName": "Go Target Launcher",
   "description": "Run, debug and profile Go main files and workspace commands from a configurable list via the Command Palette, CodeLens and status bar.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "samarin-aa-aka-rtm00",
   "license": "MIT",
   "preview": true,
@@ -132,19 +132,6 @@
           "type": "boolean",
           "default": true,
           "description": "Reuse the Go Target Launcher terminal between command executions."
-        },
-        "go-target-launcher.runMainMode": {
-          "type": "string",
-          "enum": [
-            "run",
-            "build"
-          ],
-          "enumDescriptions": [
-            "Use `go run <file>` — no leftover binary.",
-            "Use `go build -o <tmp> <file>` then execute the produced binary."
-          ],
-          "default": "run",
-          "description": "How Go Target Launcher executes a Go main file in Run mode."
         },
         "go-target-launcher.profileDuration": {
           "type": "integer",

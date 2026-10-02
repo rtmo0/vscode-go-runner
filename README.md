@@ -6,7 +6,7 @@ Go Target Launcher is a small VS Code extension for running, debugging and profi
 
 ## Features
 
-- **Run** a Go main file with `go run <file>` (or build + run).
+- **Run** a Go main file without debugging — it runs in the same RUN AND DEBUG panel and Debug Console as a debug session, but never stops on breakpoints (`golang.Go` extension required).
 - **Debug** a Go main file via the VS Code Go debugger (`golang.Go` extension required).
 - **Profile** a Go main file: captures a CPU profile and opens `go tool pprof -http` in the browser.
 - Launch configured workspace commands from the **Command Palette**, the **status bar**, or a **CodeLens**.
@@ -44,7 +44,6 @@ Each command supports:
 
 Other settings:
 
-- `go-target-launcher.runMainMode` — `run` (default) uses `go run <file>`; `build` builds a temporary binary and executes it.
 - `go-target-launcher.profileDuration` — CPU profile duration in seconds (default `30`).
 - `go-target-launcher.profileOutputDir` — where `cpu.pprof` is written (default `${workspaceFolder}/.go-profile`).
 
