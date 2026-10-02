@@ -30,7 +30,12 @@ class GoCodeLensProvider implements vscode.CodeLensProvider {
     }
 
     return getGoMains(document).flatMap((main) => {
-      const common = { name: main.name, filePath: main.filePath, dir: main.dir };
+      const common = {
+        name: main.name,
+        filePath: main.filePath,
+        dir: main.dir,
+        moduleRoot: main.moduleRoot
+      };
       return [
         codeLens(main.range, 'go-target-launcher.runMain', 'Run', common),
         codeLens(main.range, 'go-target-launcher.debugMain', 'Debug', common),
@@ -182,7 +187,7 @@ function getActiveGoMain(): GoMain | undefined {
 function runMain(main: GoMain): void {
   // Run from the module root so relative config files, data dirs and `os.Getwd()`
   // based paths resolve the same way they do when launching from the project root.
-  const cwd = main.moduleRoot;
+  const cwd = main.moduleRoot || findModuleRoot(main.dir);
   const mode = vscode.workspace.getConfiguration('go-target-launcher').get<string>('runMainMode', 'run');
   const file = shellQuote(main.filePath);
   const terminal = getTerminal(`Run ${main.name}`, cwd);
@@ -202,13 +207,14 @@ function runMain(main: GoMain): void {
 // ---------------------------------------------------------------------------
 
 function debugMain(main: GoMain): void {
+  const cwd = main.moduleRoot || findModuleRoot(main.dir);
   vscode.debug.startDebugging(undefined, {
     type: 'go',
     name: `Debug ${main.name}`,
     request: 'launch',
     mode: 'debug',
     program: main.filePath,
-    cwd: main.moduleRoot
+    cwd
   }).then(
     () => undefined,
     async (error: unknown) => {
@@ -249,6 +255,7 @@ func TestGoTargetLauncherProfile(t *testing.T) {
 `;
 
 async function profileMain(main: GoMain): Promise<void> {
+  const moduleRoot = main.moduleRoot || findModuleRoot(main.dir);
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(main.dir));
   const profileDirRaw = vscode.workspace.getConfiguration('go-target-launcher')
     .get<string>('profileOutputDir', '${workspaceFolder}/.go-profile');
@@ -276,12 +283,12 @@ async function profileMain(main: GoMain): Promise<void> {
 
   const terminal = vscode.window.createTerminal({
     name: `Profile ${main.name}`,
-    cwd: main.moduleRoot
+    cwd: moduleRoot
   });
   terminal.show(true);
 
   // Package path relative to the module root.
-  const pkgRel = path.relative(main.moduleRoot, main.dir);
+  const pkgRel = path.relative(moduleRoot, main.dir);
   const packageArg = pkgRel ? `./${pkgRel.split(path.sep).join('/')}` : '.';
   const binPath = path.join(os.tmpdir(), `go-target-launcher-${process.pid}-profile.bin`);
 
@@ -304,7 +311,7 @@ async function profileMain(main: GoMain): Promise<void> {
 
   const pprofTerminal = vscode.window.createTerminal({
     name: `pprof ${main.name}`,
-    cwd: main.moduleRoot
+    cwd: moduleRoot
   });
   pprofTerminal.show(true);
   pprofTerminal.sendText(`go tool pprof -http=localhost:0 "${profilePath}"`, true);
