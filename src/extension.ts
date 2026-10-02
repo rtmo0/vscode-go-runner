@@ -126,13 +126,25 @@ function getGoMains(document: vscode.TextDocument): GoMain[] {
     return [];
   }
 
-  const packageLine = document.lineAt(0);
+  const mainLineIndex = findFuncMainLine(document);
+  const mainLine = document.lineAt(mainLineIndex);
+  // Place the CodeLens on the `func main()` line itself.
   return [{
     name: path.basename(filePath),
     filePath,
     dir,
-    range: new vscode.Range(packageLine.range.start, packageLine.range.end)
+    range: new vscode.Range(mainLine.range.start, mainLine.range.end)
   }];
+}
+
+function findFuncMainLine(document: vscode.TextDocument): number {
+  const text = document.getText();
+  const match = /\bfunc\s+main\s*\(/.exec(text);
+  if (!match) {
+    return 0;
+  }
+  const offset = match.index;
+  return document.positionAt(offset).line;
 }
 
 function getActiveGoMain(): GoMain | undefined {
