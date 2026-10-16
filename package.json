@@ -2,7 +2,7 @@
   "name": "go-target-launcher",
   "displayName": "Go Target Launcher",
   "description": "Run, debug and profile Go main files and workspace commands from a configurable list via the Command Palette, CodeLens and status bar.",
-  "version": "0.2.0",
+  "version": "1.3.0",
   "publisher": "samarin-aa-aka-rtm00",
   "license": "MIT",
   "preview": true,
@@ -19,6 +19,9 @@
   "homepage": "https://github.com/rtmo0/vscode-go-runner#readme",
   "bugs": {
     "url": "https://github.com/rtmo0/vscode-go-runner/issues"
+  },
+  "sponsor": {
+    "url": "https://buymeacoffee.com/rtmo0"
   },
   "engines": {
     "vscode": "^1.85.0"

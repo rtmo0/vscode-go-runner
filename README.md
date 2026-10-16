@@ -1,5 +1,7 @@
 # Go Target Launcher
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/rtmo0)
+
 <img src="media/icon.png" alt="Go Target Launcher icon" width="128" align="right" />
 
 Go Target Launcher is a small VS Code extension for running, debugging and profiling Go programs and keeping frequently used workspace commands in one place. It adds a clickable **Run / Debug / Profile** action next to every Go `package main` file.
@@ -60,6 +62,10 @@ A file is treated as a Go main file when it starts with `package main` and decla
 Run, Debug and Profile all execute from the **module root** — the nearest directory containing a `go.mod`, searched upward from the main file. This makes relative config files, data directories and `os.Getwd()` based paths behave exactly like running the program from the project root, no matter where the `main.go` file lives.
 
 > **Profile mode** compiles a test binary (`go test -c`) with a temporary test wrapper injected through `go test -overlay` (your project files are never modified), then runs that binary from the module root. It captures a CPU profile for `go-target-launcher.profileDuration` seconds and opens the interactive `go tool pprof -http` web UI.
+
+## Support
+
+Go Target Launcher is free and open source. If it saves you time, you can support its development on [Buy Me a Coffee](https://buymeacoffee.com/rtmo0). Bug reports and pull requests are just as welcome.
 
 ## Development
 

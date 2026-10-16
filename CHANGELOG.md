@@ -2,6 +2,11 @@
 
 All notable changes to the Go Target Launcher extension will be documented in this file.
 
+## [1.3.0]
+
+- Added a **Sponsor** button (Buy Me a Coffee) to the extension page in VS Code and the Marketplace, and a Support section to the README.
+- Releases now create a GitHub Release with the VSIX attached; Marketplace publishing runs only when a publisher token is configured.
+
 ## [0.2.0]
 
 - **Run** now launches the program without debugging (`noDebug`) in the same RUN AND DEBUG panel and Debug Console as a debug session.
