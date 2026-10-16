@@ -1,6 +1,6 @@
 # Go Target Launcher
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/rtmo0)
+[![Support on Boosty](https://img.shields.io/badge/Boosty-support-F15F2C?logo=boosty&logoColor=white)](https://boosty.to/rtm00)
 
 <img src="media/icon.png" alt="Go Target Launcher icon" width="128" align="right" />
 
@@ -65,7 +65,7 @@ Run, Debug and Profile all execute from the **module root** — the nearest dire
 
 ## Support
 
-Go Target Launcher is free and open source. If it saves you time, you can support its development on [Buy Me a Coffee](https://buymeacoffee.com/rtmo0). Bug reports and pull requests are just as welcome.
+Go Target Launcher is free and open source. If it saves you time, you can support its development on [Boosty](https://boosty.to/rtm00). Bug reports and pull requests are just as welcome.
 
 ## Development
 
